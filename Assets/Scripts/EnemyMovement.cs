@@ -15,6 +15,7 @@ public class EnemyMovement : MonoBehaviour
 
     public bool spottedPlayer;
     public bool isSearching;
+    public bool attacking;
     public Material currentMat;
 
     // create states
@@ -34,6 +35,7 @@ public class EnemyMovement : MonoBehaviour
     {
         state = State.Patrol;
         isSearching = true;
+        attacking = false;
         currentMat = GetComponent<Renderer>().material;
     }
 
@@ -52,10 +54,14 @@ public class EnemyMovement : MonoBehaviour
         }
         else if (!spottedPlayer && state == State.Chase)
         {
-            // Debug.Log("LOOKIN BRO");
+             Debug.Log("LOOKIN BRO");
             // TEMP would first goto search
             state = State.Search;
+        }
 
+        if (attacking)
+        {
+            state = State.Attack;
         }
     }
 
@@ -85,11 +91,12 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
+
     void Patrol()
     {
         currentMat.color = Color.green;
         if (transform.position == points[nextWayPoint])
-        {         
+        {
             if (nextWayPoint >= 3)
             {
                 nextWayPoint = 0;
@@ -113,6 +120,18 @@ public class EnemyMovement : MonoBehaviour
     void Attack()
     {
         currentMat.color = Color.black;
+
+        enemy.isStopped = true;
+        enemy.SetDestination(transform.position);
+        StartCoroutine(WaitCorutine());
+
+    }
+    IEnumerator WaitCorutine()
+    {
+        yield return new WaitForSeconds(1);
+        state = State.Chase;
+        enemy.isStopped = false;
+        attacking = false;
     }
 
     void Search()
@@ -128,7 +147,7 @@ public class EnemyMovement : MonoBehaviour
             Debug.Log("S C A N N I N G");
             isSearching = false;
         }
-        
+
 
         if (enemy.transform.position.x == lastKnownPosition.x && enemy.transform.position.z == lastKnownPosition.z)
         {
@@ -137,7 +156,7 @@ public class EnemyMovement : MonoBehaviour
             isSearching = true;
         }
     }
-    
+
     void Retreat()
     {
         currentMat.color = Color.blue;
@@ -148,4 +167,5 @@ public class EnemyMovement : MonoBehaviour
             state = State.Patrol;
         }
     }
+
 }
