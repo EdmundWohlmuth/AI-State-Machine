@@ -121,17 +121,20 @@ public class EnemyMovement : MonoBehaviour
 
         if (isSearching)
         {
-            lastKnownPosition = player.transform.position;
+            lastKnownPosition.x = player.transform.position.x;
+            lastKnownPosition.z = player.transform.position.z;
+
             enemy.SetDestination(lastKnownPosition);
             Debug.Log("S C A N N I N G");
             isSearching = false;
         }
         
 
-        if (enemy.transform.position == lastKnownPosition)
+        if (enemy.transform.position.x == lastKnownPosition.x && enemy.transform.position.z == lastKnownPosition.z)
         {
             Debug.Log("At Last Known Pos");
-            state = State.Retreat;          
+            state = State.Retreat;
+            isSearching = true;
         }
     }
     
@@ -142,7 +145,7 @@ public class EnemyMovement : MonoBehaviour
 
         if (enemy.transform.position == points[nextWayPoint])
         {
-            state = State.Patrol;           
+            state = State.Patrol;
         }
     }
 }
