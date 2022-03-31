@@ -8,10 +8,14 @@ public class EnemyMovement : MonoBehaviour
     public NavMeshAgent enemy;
     public GameObject player;
 
-
     // Patrol
     public int nextWayPoint;
     public Vector3[] points;
+    public Vector3 lastKnownPosition;
+
+    public bool spottedPlayer;
+    public bool isSearching;
+    public Material currentMat;
 
     // create states
     public enum State
@@ -22,46 +26,68 @@ public class EnemyMovement : MonoBehaviour
         Search,
         Retreat
     }
-    State state;
+    public State state;
 
 
     // Start is called before the first frame update
     void Start()
     {
         state = State.Patrol;
+        isSearching = true;
+        currentMat = GetComponent<Renderer>().material;
     }
 
     // Update is called once per frame
     void Update()
     {
-        SetState();
+        ChangeState();
+        ActivateState();
     }
 
-    void SetState()
+    void ChangeState()
+    {
+        if (spottedPlayer)
+        {
+            state = State.Chase;
+        }
+        else if (!spottedPlayer && state == State.Chase)
+        {
+            // Debug.Log("LOOKIN BRO");
+            // TEMP would first goto search
+            state = State.Search;
+
+        }
+    }
+
+    void ActivateState()
     {
         switch (state)
         {
-            case State.Patrol:
+            case State.Patrol:                
                 Patrol();
                 break;
 
-            case State.Chase:
+            case State.Chase:               
                 Chase();
                 break;
 
             case State.Attack:
+                Attack();
                 break;
 
             case State.Search:
+                Search();
                 break;
 
-            case State.Retreat:
+            case State.Retreat:                
+                Retreat();
                 break;
         }
     }
 
     void Patrol()
     {
+        currentMat.color = Color.green;
         if (transform.position == points[nextWayPoint])
         {         
             if (nextWayPoint >= 3)
@@ -79,6 +105,44 @@ public class EnemyMovement : MonoBehaviour
 
     void Chase()
     {
+        currentMat.color = Color.red;
+
         enemy.SetDestination(player.transform.position);
+    }
+
+    void Attack()
+    {
+        currentMat.color = Color.black;
+    }
+
+    void Search()
+    {
+        currentMat.color = Color.yellow;
+
+        if (isSearching)
+        {
+            lastKnownPosition = player.transform.position;
+            enemy.SetDestination(lastKnownPosition);
+            Debug.Log("S C A N N I N G");
+            isSearching = false;
+        }
+        
+
+        if (enemy.transform.position == lastKnownPosition)
+        {
+            Debug.Log("At Last Known Pos");
+            state = State.Retreat;          
+        }
+    }
+    
+    void Retreat()
+    {
+        currentMat.color = Color.blue;
+        enemy.SetDestination(points[nextWayPoint]);
+
+        if (enemy.transform.position == points[nextWayPoint])
+        {
+            state = State.Patrol;           
+        }
     }
 }
