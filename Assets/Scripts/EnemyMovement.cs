@@ -54,8 +54,7 @@ public class EnemyMovement : MonoBehaviour
         }
         else if (!spottedPlayer && state == State.Chase)
         {
-             Debug.Log("LOOKIN BRO");
-            // TEMP would first goto search
+            Debug.Log("LOOKIN BRO");
             state = State.Search;
         }
 
@@ -95,7 +94,7 @@ public class EnemyMovement : MonoBehaviour
     void Patrol()
     {
         currentMat.color = Color.green;
-        if (transform.position == points[nextWayPoint])
+        if (Vector3.Distance(transform.position, points[nextWayPoint]) < 1)
         {
             if (nextWayPoint >= 3)
             {
@@ -123,12 +122,12 @@ public class EnemyMovement : MonoBehaviour
 
         enemy.isStopped = true;
         enemy.SetDestination(transform.position);
-        StartCoroutine(WaitCorutine());
-
+        StartCoroutine(WaitCorutine(1));
     }
-    IEnumerator WaitCorutine()
+    IEnumerator WaitCorutine(int waitTime)
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(waitTime);
+
         state = State.Chase;
         enemy.isStopped = false;
         attacking = false;
@@ -137,20 +136,17 @@ public class EnemyMovement : MonoBehaviour
     void Search()
     {
         currentMat.color = Color.yellow;
+        
 
         if (isSearching)
         {
-            lastKnownPosition.x = player.transform.position.x;
-            lastKnownPosition.z = player.transform.position.z;
-
+            lastKnownPosition = player.transform.position;
             enemy.SetDestination(lastKnownPosition);
             Debug.Log("S C A N N I N G");
             isSearching = false;
         }
-
-
-        if (enemy.transform.position.x == lastKnownPosition.x && enemy.transform.position.z == lastKnownPosition.z)
-        {
+        if (Vector3.Distance(transform.position, lastKnownPosition) < 2)
+        {   
             Debug.Log("At Last Known Pos");
             state = State.Retreat;
             isSearching = true;
@@ -162,7 +158,7 @@ public class EnemyMovement : MonoBehaviour
         currentMat.color = Color.blue;
         enemy.SetDestination(points[nextWayPoint]);
 
-        if (enemy.transform.position == points[nextWayPoint])
+        if (Vector3.Distance(enemy.transform.position, points[nextWayPoint]) < 1)
         {
             state = State.Patrol;
         }
